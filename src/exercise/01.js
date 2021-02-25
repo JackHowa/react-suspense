@@ -2,7 +2,7 @@
 // http://localhost:3000/isolated/exercise/01.js
 
 import * as React from 'react'
-import { fetchPokemon, PokemonDataView } from '../pokemon'
+import { fetchPokemon, PokemonDataView, PokemonErrorBoundary } from '../pokemon'
 
 let pokemon;
 
@@ -11,36 +11,33 @@ let pokemon;
 const pokeMonPromise = fetchPokemon('pikachu').then(resolvedValue => (pokemon = resolvedValue))
 
 function PokemonInfo() {
-  // 🐨 if there's no pokemon yet, then throw the pokemonPromise
-  // 💰 (no, for real. Like: `throw pokemonPromise`)
-  // if the code gets it this far, then the pokemon variable is defined and
-  // rendering can continue!
+  if (!pokemon) {
+    // if fetching
+    // then render suspense fallback loading
+    throw pokeMonPromise;
+  }
 
   // if pokemon has been set 
   // then render
-  if (pokemon) {
-    return (
-      <div>
-        <div className="pokemon-info__img-wrapper">
-          <img src={pokemon.image} alt={pokemon.name} />
-        </div>
-        <PokemonDataView pokemon={pokemon} />
+  return (
+    <div>
+      <div className="pokemon-info__img-wrapper">
+        <img src={pokemon.image} alt={pokemon.name} />
       </div>
-    )
-  }
-
-  // if fetching
-  // then render suspense fallback loading
-  throw pokeMonPromise;
+      <PokemonDataView pokemon={pokemon} />
+    </div>
+  )
 }
 
 function App() {
   return (
     <div className="pokemon-info-app">
       <div className="pokemon-info">
-        <React.Suspense fallback={<div>Fetching pikachu</div>}>
-          <PokemonInfo />
-        </React.Suspense>
+        <PokemonErrorBoundary>
+          <React.Suspense fallback={<div>Fetching pikachu</div>}>
+            <PokemonInfo />
+          </React.Suspense>
+        </PokemonErrorBoundary>
       </div>
     </div>
   )
